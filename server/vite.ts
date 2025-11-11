@@ -67,29 +67,32 @@ export async function setupVite(app: Express, server: Server) {
 }
 
 export function serveStatic(app: Express) {
-  // In Vercel, static files are served separately, so we don't need to serve them here
-  // But for local production builds, use dist/public
+  // Try typical production build output first
   const distPath = path.resolve(import.meta.dirname, "..", "dist", "public");
-  const fallbackPath = path.resolve(import.meta.dirname, "public");
+  // Fallbacks for environments without a build step (e.g., Replit preview)
+  const publicPath = path.resolve(import.meta.dirname, "public");
+  const clientPath = path.resolve(import.meta.dirname, "..", "client");
 
   let staticPath: string | null = null;
-  
+
   if (fs.existsSync(distPath)) {
     staticPath = distPath;
-  } else if (fs.existsSync(fallbackPath)) {
-    staticPath = fallbackPath;
+  } else if (fs.existsSync(publicPath)) {
+    staticPath = publicPath;
+  } else if (fs.existsSync(path.resolve(clientPath, "index.html"))) {
+    // Serve directly from client directory when no dist/public exists
+    staticPath = clientPath;
   }
 
   if (staticPath) {
     app.use(express.static(staticPath));
 
-    // fall through to index.html if the file doesn't exist
+    // Fall through to index.html for client-side routing
     app.use("*", (_req, res) => {
       res.sendFile(path.resolve(staticPath!, "index.html"));
     });
   } else {
-    // In Vercel serverless, we might not have static files here
-    // They're served by Vercel's static hosting
+    // Last resort: return 404 (should rarely happen)
     app.use("*", (_req, res) => {
       res.status(404).json({ message: "Not found" });
     });
