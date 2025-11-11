@@ -1,8 +1,11 @@
 import Navbar from '@/components/navbar';
 import Certifications from '@/components/certifications';
 import Footer from '@/components/footer';
+import { useSectionReveal } from '@/hooks/useSectionReveal';
 
 export default function CertificationsPage() {
+  useSectionReveal();
+
   return (
     <div className="bg-black text-white min-h-screen">
       <Navbar />

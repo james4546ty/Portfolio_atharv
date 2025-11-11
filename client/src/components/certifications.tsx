@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getQueryFn } from '@/lib/queryClient';
 
 export default function Certifications() {
-  const { data: certificationsData, isLoading } = useQuery<any[]>({
+  const { data: certificationsData, isLoading, isError } = useQuery<any[]>({
     queryKey: ['/api/certifications'],
     queryFn: getQueryFn({ on401: 'returnNull' }),
   });
@@ -35,7 +35,11 @@ export default function Certifications() {
             </p>
           </div>
           
-          {certifications.length === 0 ? (
+          {isError ? (
+            <div className="text-center py-12">
+              <p className="text-red-400 text-lg">Failed to load certifications. Please try again later.</p>
+            </div>
+          ) : certifications.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-gray-400 text-lg">No certifications available yet.</p>
             </div>
